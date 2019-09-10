@@ -49,23 +49,6 @@ function updateMap(){
     }
     map.push(mapRow);
   }
-  //show snakes
-  for (let s in snakes){
-    snakes[s].update();
-    console.log(snakes[s].body[0]);
-    if (map[snakes[s].body[0][0], snakes[s].body[0][1]] == [0, 255, 0]){
-      // snakes[s].eat();
-    } else if (snakes[s].body.length != 1) {
-      let last = snakes[s].body.length - 1;
-      snakes[s].body.splice(last, 1);
-    }
-    for (let b = 0; b < snakes[s].body.length; b++){
-      let newMapX = snakes[s].body[b][0];
-      let newMapY = snakes[s].body[b][1];
-      // console.log(newMapX, newMapY);
-      map[newMapX][newMapY] = snakes[s].col;
-    }
-  }
   //spawn/show food
   let foodRate;
   if (users.length <= 2){
@@ -91,6 +74,32 @@ function updateMap(){
     let fX = food[f][0];
     let fY = food[f][1];
     map[fX][fY] = [0, 255, 0];
+  }
+  //show snakes
+  for (let s in snakes){
+    snakes[s].update();
+    console.log(snakes[s].body[0]);
+    console.log(map[snakes[s].body[0][0]][snakes[s].body[0][1]]);
+    // if (map[snakes[s].body[0][0]][snakes[s].body[0][1]] == [0, 255, 0]){
+    if (map[snakes[s].body[0][0]][snakes[s].body[0][1]][1] == 255){ //WHYYYYY
+      console.log('chomp');
+      for (let f = food.length - 1; f >= 0; f--){
+        if (food[f][0] == snakes[s].body[0][0] 
+        && food[f][1] == snakes[s].body[0][1]){
+          food.splice(f, 1);
+        }
+      }
+      // snakes[s].eat();
+    } else if (snakes[s].body.length != 1) {
+      let last = snakes[s].body.length - 1;
+      snakes[s].body.splice(last, 1);
+    }
+    for (let b = 0; b < snakes[s].body.length; b++){
+      let newMapX = snakes[s].body[b][0];
+      let newMapY = snakes[s].body[b][1];
+      // console.log(newMapX, newMapY);
+      map[newMapX][newMapY] = snakes[s].col;
+    }
   }
 }
 setInterval(function(){
@@ -170,7 +179,7 @@ class Snake {
     this.yDir = 0;
     // this.col = color(int(random(75, 255)), int(random(75, 255)), int(random(75, 255)));
     // this.col = col;
-    this.col = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)];
+    this.col = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 254), Math.floor(Math.random() * 255)]; //green
     this.startX = Math.floor(Math.random() * mapWidth);
     this.startY = Math.floor(Math.random() * mapHeight);
     this.body = [

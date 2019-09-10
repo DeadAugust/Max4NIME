@@ -36,7 +36,7 @@ function draw(){
     for (let y = 0; y < mapHeight; y++) {
         for (let x = 0; x < mapWidth; x++) {
             push();
-            fill(map[y][x]);
+            fill(map[x][y]);
             rect(x * mapScale, y * mapScale, mapScale, mapScale);
             pop();
         }
