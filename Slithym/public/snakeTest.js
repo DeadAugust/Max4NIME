@@ -10,11 +10,17 @@ socket.on('connect', function() {
 //map setup
 let map = [];
 let mapWidth, mapHeight;
+let mapScale;
+
 socket.on('heresMap', function(mapInfo) {
     map = mapInfo.m;
     mapWidth = mapInfo.w;
     mapHeight = mapInfo.h;
-    console.log('map received:');
+    console.log('map received:', map);
+});
+
+socket.on('update', function(m){
+    map = m;
 });
 
 function setup(){
@@ -22,16 +28,19 @@ function setup(){
     createCanvas(windowWidth, windowHeight);
     noStroke();
     rectMode(CORNER);
-
-    // snake = new Snake();
-
+    mapScale = windowHeight / mapHeight;
 }
 
 function draw(){
     background(120);
-    //for all
-    // snake.update();
-    // snake.show();
+    for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+            push();
+            fill(map[y][x]);
+            rect(x * mapScale, y * mapScale, mapScale, mapScale);
+            pop();
+        }
+    }
 }
 
 function keyPressed(){
