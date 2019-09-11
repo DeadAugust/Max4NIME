@@ -81,6 +81,7 @@ function updateMap(){
     console.log(snakes[s].body[0]);
     console.log(map[snakes[s].body[0][0]][snakes[s].body[0][1]]);
     // if (map[snakes[s].body[0][0]][snakes[s].body[0][1]] == [0, 255, 0]){
+    //if eating
     if (map[snakes[s].body[0][0]][snakes[s].body[0][1]][1] == 255){ //WHYYYYY
       console.log('chomp');
       for (let f = food.length - 1; f >= 0; f--){
@@ -89,8 +90,10 @@ function updateMap(){
           food.splice(f, 1);
         }
       }
-      // snakes[s].eat();
-    } else if (snakes[s].body.length != 1) {
+    } else if (map[snakes[s].body[0][0]][snakes[s].body[0][1]][0] != 0){
+      // invalid spot, die
+      snakes[s].die();
+    } else if (snakes[s].body.length != 1) { //if didn't eat
       let last = snakes[s].body.length - 1;
       snakes[s].body.splice(last, 1);
     }
@@ -120,7 +123,6 @@ players.on('connection',
     users.push(socket);
     // add snake to server
     let newSnake = new Snake(socket.id);
-    // snakes.push(newSnake);
     snakes[socket.id] = newSnake;
     //update map at start
     socket.on('gimmeMap', function () {
@@ -172,14 +174,14 @@ players.on('connection',
   });
 
 class Snake {
-  constructor(id) {
+  constructor(id, col) {
     // this.body[0] = createVector(0, 0);
     this.id = id;
     this.xDir = 0;
     this.yDir = 0;
     // this.col = color(int(random(75, 255)), int(random(75, 255)), int(random(75, 255)));
     // this.col = col;
-    this.col = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 254), Math.floor(Math.random() * 255)]; //green
+    this.col = col || [Math.floor(Math.random() * 254) + 1, Math.floor(Math.random() * 254), Math.floor(Math.random() * 255)]; //first not 0, not full green
     this.startX = Math.floor(Math.random() * mapWidth);
     this.startY = Math.floor(Math.random() * mapHeight);
     this.body = [
@@ -198,11 +200,17 @@ class Snake {
       let newCell = [];
       let oldX = this.body[0][0];
       let oldY = this.body[0][1];
-      if (oldX + this.xDir < mapWidth && oldX + this.xDir >= 0 
-      && oldY + this.yDir < mapHeight && oldY + this.yDir >= 0){
+      let newX = oldX + this.xDir;
+      let newY = oldY + this.yDir;
+      if (newX < mapWidth && newX >= 0 
+      && newY < mapHeight && newY >= 0){ //in bounds
+       if (map[newX][newY][0] == 0){ // if won't hit anything besides food
         newCell.push(oldX + this.xDir);
         newCell.push(oldY + this.yDir);
         this.body.unshift(newCell);
+        } else {
+          this.die();
+        }
       } else {
         this.die();
       }
@@ -212,6 +220,21 @@ class Snake {
   }
   die(){
     console.log('snake dead');
+    this.startX = Math.floor(Math.random() * mapWidth);
+    this.startY = Math.floor(Math.random() * mapHeight);
+    this.body = [
+      [this.startX, this.startY]
+    ];
+    /*
+    for (let s in snakes){
+      if (snakes[s].id == this.id){
+        // add new snake to server -- doesn't work
+        // let newSnake = new Snake(this.id, this.col);
+        // snakes[this.id] = newSnake;
+        delete snakes[s];
+      }
+    }
+    */
   }
   // eat(foodX, foodY) {
   //   this.body.unshift([foodX, foodY]);
