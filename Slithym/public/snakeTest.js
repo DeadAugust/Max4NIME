@@ -16,12 +16,8 @@ socket.on('heresMap', function(mapInfo) {
     map = mapInfo.m;
     mapWidth = mapInfo.w;
     mapHeight = mapInfo.h;
-    console.log('map received:', map);
-});
-
-socket.on('update', function(m){
-    console.log('beat');
-    map = m;
+    console.log(mapHeight);
+    // console.log('map received:', map);
 });
 
 function setup(){
@@ -29,11 +25,19 @@ function setup(){
     createCanvas(windowWidth, windowHeight);
     noStroke();
     rectMode(CORNER);
-    mapScale = windowHeight / mapHeight;
+    // console.log(mapHeight);
+    // mapScale = windowHeight / mapHeight;
+    
+    socket.on('update', function(m){
+        // console.log('beat');
+        mapScale = windowHeight / mapHeight;
+        map = m;
+    });
 }
 
 function draw(){
     background(120);
+    // console.log(map);
     for (let y = 0; y < mapHeight; y++) {
         for (let x = 0; x < mapWidth; x++) {
             push();
@@ -47,23 +51,23 @@ function draw(){
 function keyPressed(){
     if (keyCode === UP_ARROW || keyCode === 87){ //w
         socket.emit('up');
-        console.log('up');
+        // console.log('up');
     }
     if (keyCode === DOWN_ARROW || keyCode === 83){//s
         socket.emit('down');
-        console.log('down');
+        // console.log('down');
         // snake.setDir(0,1);
     }
     if (keyCode === LEFT_ARROW || keyCode === 65 ){//a
         // snake.setDir(-1,0);
         socket.emit('left');
-        console.log('left');
+        // console.log('left');
 
     }
     if (keyCode === RIGHT_ARROW || keyCode === 68 ){//d
         // snake.setDir(1,0);
         socket.emit('right');
-        console.log('right');
+        // console.log('right');
         
     }
 }

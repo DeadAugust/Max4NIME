@@ -2,6 +2,7 @@
 // export default class Snake {
 
 // now in server.js...
+/*
 class Snake {
     constructor(){
         // this.body[0] = createVector(0, 0);
@@ -33,3 +34,4 @@ class Snake {
         this.body.unshift([foodX, foodY]);
     }
 }
+*/
