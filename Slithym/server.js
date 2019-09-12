@@ -35,7 +35,22 @@ let foodCount = 0;
 // const snake = require('./public/snake.js');
 let snakes = {};
 //max info
+/*
+const maxApi = require('max-api');
+maxApi.post('test');
+//reset all instruments
+maxApi.outlet(['kick', 0, 0, 0, 0, 0, 0, 0, 0]);
+maxApi.outlet(['snare', 0, 0, 0, 0, 0, 0, 0, 0]); //list
+maxApi.outlet(['tom', 0, 0, 0, 0, 0, 0, 0, 0]); //list
+maxApi.outlet(['openhat', 0, 0, 0, 0, 0, 0, 0, 0]); //list
+maxApi.outlet(['closedhat', 0, 0, 0, 0, 0, 0, 0, 0]); //list
+maxApi.outlet(['cymbal', 0, 0, 0, 0, 0, 0, 0, 0]); //list
+*/
+
 let beat = 500;
+let step = 1;
+let count = 8; //could scale to 16 in theory
+let instruments = ['kick', 'snare', 'tom', 'openhat', 'closedhat', 'cymbal'];
 
 //update heartbeat
 function updateMap(){
@@ -59,7 +74,7 @@ function updateMap(){
     foodRate = 2;
   }
   foodCount += 1;
-  console.log(foodCount, foodRate);
+  // console.log(foodCount, foodRate);
   if (foodCount % foodRate == 0){
     let randX = Math.floor(Math.random()*mapWidth);
     let randY = Math.floor(Math.random()*mapHeight);
@@ -78,12 +93,30 @@ function updateMap(){
   //show snakes
   for (let s in snakes){
     snakes[s].update();
-    console.log(snakes[s].body[0]);
-    console.log(map[snakes[s].body[0][0]][snakes[s].body[0][1]]);
+    // // console.log(snakes[s].body[0]);
+    // console.log(map[snakes[s].body[0][0]][snakes[s].body[0][1]]);
     // if (map[snakes[s].body[0][0]][snakes[s].body[0][1]] == [0, 255, 0]){
     //if eating
     if (map[snakes[s].body[0][0]][snakes[s].body[0][1]][1] == 255){ //WHYYYYY
       console.log('chomp');
+      //update steps for max
+      console.log('steps', snakes[s].steps);
+      //toggle step
+      if (snakes[s].steps[step-1] == step){ //if on, turn off
+        snakes[s].steps[step-1] = 0;
+      } else {
+        snakes[s].steps[step-1] = step;
+      }
+      let maxList = [];
+      maxList.push(snakes[s].instrument);
+      console.log(snakes[s].steps);
+      for (let c = 0; c < snakes[s].steps.length; c++){
+        maxList.push(snakes[s].steps[c]);
+      }
+      console.log('maxList', maxList);
+      // maxApi.post(maxList);
+      // maxApi.outlet(maxList);
+      //update food
       for (let f = food.length - 1; f >= 0; f--){
         if (food[f][0] == snakes[s].body[0][0] 
         && food[f][1] == snakes[s].body[0][1]){
@@ -106,6 +139,11 @@ function updateMap(){
   }
 }
 setInterval(function(){
+  if (step < count){
+    step += 1;
+  } else{
+    step = 1;
+  }
   if(users){
     updateMap();
   }
@@ -118,11 +156,18 @@ let players = io.of('/');
 players.on('connection',
   function (socket) {
     console.log("We have a new player: " + socket.id);
+    // maxApi.post('new player: ' + socket.id);
 
     // Add socket to queue
     users.push(socket);
     // add snake to server
-    let newSnake = new Snake(socket.id);
+    let userSlot;
+    if (users.length <= instruments.length){
+      userSlot = users.length;
+    } else if (users.length <= (instruments.length * 2)) {
+      userSlot = users.length - instruments.length; //so overflow will just repeat but with max of two per?
+    }
+    let newSnake = new Snake(socket.id, userSlot);
     snakes[socket.id] = newSnake;
     //update map at start
     socket.on('gimmeMap', function () {
@@ -139,7 +184,7 @@ players.on('connection',
     socket.on('up', function () {
       snakes[socket.id].xDir = 0;
       snakes[socket.id].yDir = -1;
-      console.log(snakes);
+      // console.log(snakes);
     });
     socket.on('down', function () {
       snakes[socket.id].xDir = 0;
@@ -174,19 +219,27 @@ players.on('connection',
   });
 
 class Snake {
-  constructor(id, col) {
+  // constructor(id, col) {
+  constructor(id, userSlot) {
+
     // this.body[0] = createVector(0, 0);
     this.id = id;
     this.xDir = 0;
     this.yDir = 0;
     // this.col = color(int(random(75, 255)), int(random(75, 255)), int(random(75, 255)));
     // this.col = col;
-    this.col = col || [Math.floor(Math.random() * 254) + 1, Math.floor(Math.random() * 254), Math.floor(Math.random() * 255)]; //first not 0, not full green
+    this.instrument = instruments[userSlot];
+    this.col = [Math.floor(Math.random() * 254) + 1, Math.floor(Math.random() * 254), Math.floor(Math.random() * 255)]; //first not 0, not full green
     this.startX = Math.floor(Math.random() * mapWidth);
     this.startY = Math.floor(Math.random() * mapHeight);
     this.body = [
       [this.startX, this.startY]
     ];
+    this.steps = []; //for the sequencer
+    for (let c = 0; c < count; c++){ //scales with count, 8 or 16
+      this.steps.push(0);
+    }
+    console.log("this.steps", this.steps);
   }
   // setDir(x, y) {
   //   this.xDir = x;
@@ -220,11 +273,16 @@ class Snake {
   }
   die(){
     console.log('snake dead');
+    // maxApi.post('snake dead');
     this.startX = Math.floor(Math.random() * mapWidth);
     this.startY = Math.floor(Math.random() * mapHeight);
     this.body = [
       [this.startX, this.startY]
     ];
+    this.steps = []; //for the sequencer
+    for (let c = 0; c < count; c++){ //scales with count, 8 or 16
+      this.steps.push(0);
+    }
     /*
     for (let s in snakes){
       if (snakes[s].id == this.id){
