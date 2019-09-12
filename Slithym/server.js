@@ -228,7 +228,7 @@ class Snake {
     this.yDir = 0;
     // this.col = color(int(random(75, 255)), int(random(75, 255)), int(random(75, 255)));
     // this.col = col;
-    this.instrument = instruments[userSlot];
+    this.instrument = instruments[userSlot-1];
     maxApi.post('new instrument: '+ this.instrument);
     this.col = [Math.floor(Math.random() * 254) + 1, Math.floor(Math.random() * 254), Math.floor(Math.random() * 255)]; //first not 0, not full green
     this.startX = Math.floor(Math.random() * mapWidth);
