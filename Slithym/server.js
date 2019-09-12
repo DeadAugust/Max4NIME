@@ -35,7 +35,7 @@ let foodCount = 0;
 // const snake = require('./public/snake.js');
 let snakes = {};
 //max info
-/*
+
 const maxApi = require('max-api');
 maxApi.post('test');
 //reset all instruments
@@ -45,7 +45,7 @@ maxApi.outlet(['tom', 0, 0, 0, 0, 0, 0, 0, 0]); //list
 maxApi.outlet(['openhat', 0, 0, 0, 0, 0, 0, 0, 0]); //list
 maxApi.outlet(['closedhat', 0, 0, 0, 0, 0, 0, 0, 0]); //list
 maxApi.outlet(['cymbal', 0, 0, 0, 0, 0, 0, 0, 0]); //list
-*/
+
 
 let beat = 500;
 let step = 1;
@@ -114,8 +114,8 @@ function updateMap(){
         maxList.push(snakes[s].steps[c]);
       }
       console.log('maxList', maxList);
-      // maxApi.post(maxList);
-      // maxApi.outlet(maxList);
+      maxApi.post(maxList);
+      maxApi.outlet(maxList);
       //update food
       for (let f = food.length - 1; f >= 0; f--){
         if (food[f][0] == snakes[s].body[0][0] 
@@ -156,7 +156,7 @@ let players = io.of('/');
 players.on('connection',
   function (socket) {
     console.log("We have a new player: " + socket.id);
-    // maxApi.post('new player: ' + socket.id);
+    maxApi.post('new player: ' + socket.id);
 
     // Add socket to queue
     users.push(socket);
@@ -229,6 +229,7 @@ class Snake {
     // this.col = color(int(random(75, 255)), int(random(75, 255)), int(random(75, 255)));
     // this.col = col;
     this.instrument = instruments[userSlot];
+    maxApi.post('new instrument: '+ this.instrument);
     this.col = [Math.floor(Math.random() * 254) + 1, Math.floor(Math.random() * 254), Math.floor(Math.random() * 255)]; //first not 0, not full green
     this.startX = Math.floor(Math.random() * mapWidth);
     this.startY = Math.floor(Math.random() * mapHeight);
@@ -273,7 +274,7 @@ class Snake {
   }
   die(){
     console.log('snake dead');
-    // maxApi.post('snake dead');
+    maxApi.post('snake dead');
     this.startX = Math.floor(Math.random() * mapWidth);
     this.startY = Math.floor(Math.random() * mapHeight);
     this.body = [
@@ -283,6 +284,7 @@ class Snake {
     for (let c = 0; c < count; c++){ //scales with count, 8 or 16
       this.steps.push(0);
     }
+    maxApi.outlet([this.instrument, 0, 0, 0, 0, 0, 0, 0, 0]);
     /*
     for (let s in snakes){
       if (snakes[s].id == this.id){
