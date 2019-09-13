@@ -47,7 +47,7 @@ maxApi.outlet(['closedhat', 0, 0, 0, 0, 0, 0, 0, 0]); //list
 maxApi.outlet(['cymbal', 0, 0, 0, 0, 0, 0, 0, 0]); //list
 
 
-let beat = 500;
+let beat = 250;
 let step = 1;
 let count = 8; //could scale to 16 in theory
 let instruments = ['kick', 'snare', 'tom', 'openhat', 'closedhat', 'cymbal'];
